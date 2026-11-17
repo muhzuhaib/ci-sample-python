@@ -1,0 +1,4 @@
+# Tool versions used by the workflows. Pinned so every run uses the same tools.
+build==1.6.1
+pytest==9.2.0
+ruff==0.17.5
