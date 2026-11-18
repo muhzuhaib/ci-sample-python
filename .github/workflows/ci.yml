@@ -1,6 +1,7 @@
-# Checks every push and pull request: lint, unit tests on three Python versions,
-# then build the package, run the smoke tests on the built wheel and write checksums.
-# The release workflow calls this same file, so a release only happens when every check passes.
+# Checks every push and pull request: lint, then unit tests on three Python versions on Linux, Windows
+# and macOS. The build runs on Linux: it builds the package, runs the smoke tests on the built wheel
+# and writes checksums. The release workflow calls this same file, so a release only happens when
+# every check passes.
 name: CI
 
 on:
@@ -41,12 +42,13 @@ jobs:
       - run: ruff format --check .
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
