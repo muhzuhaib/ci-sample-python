@@ -23,6 +23,9 @@ Security settings in both files:
 - `actions/checkout` runs with `persist-credentials: false`.
 - No secrets are used. The release job uses the built-in `GITHUB_TOKEN`.
 - Every job has a `timeout-minutes` limit.
+- The release job installs nothing. The SBOM is made in the read-only
+  `build` job, and the token that writes the release is set only on the
+  publish step.
 
 Caching: `actions/setup-python` caches pip downloads, keyed on `requirements-ci.txt` and `pyproject.toml`. The run log shows `Cache restored from key: ...` when it is used.
 
@@ -46,17 +49,17 @@ The release page then holds the wheel, the source archive, `SHA256SUMS` and `sbo
 3. If a version tag was already pushed, nothing was published. Push a new
    tag (for example `v0.2.1`) once the fix is on `main`.
 
-Proof this repository blocks a release on a failing test: tag `v0.1.0-rc.1`
+Proof this repository blocks a release on a failing test: tag `v0.2.0-rc.1`
 on branch `drill/red-test`. Its release run failed in `test` and skipped
 `build` and `release`, and no release exists for that tag.
 
 ## 4. Check a release
 
 ```
-gh release download v0.1.0 --repo muhzuhaib/ci-sample-python
+gh release download v0.2.0 --repo muhzuhaib/ci-sample-python
 sha256sum -c SHA256SUMS
-gh attestation verify wordtally-0.1.0-py3-none-any.whl --repo muhzuhaib/ci-sample-python
-gh attestation verify wordtally-0.1.0-py3-none-any.whl --repo muhzuhaib/ci-sample-python --predicate-type https://spdx.dev/Document/v2.3
+gh attestation verify wordtally-0.2.0-py3-none-any.whl --repo muhzuhaib/ci-sample-python
+gh attestation verify wordtally-0.2.0-py3-none-any.whl --repo muhzuhaib/ci-sample-python --predicate-type https://spdx.dev/Document/v2.3
 ```
 
 `sha256sum -c` shows `OK` for each file. Each `gh attestation verify` ends
@@ -72,12 +75,12 @@ Use this when a release file is lost, damaged or replaced by mistake.
 2. Rebuild that release from its tag:
 
 ```
-gh workflow run release.yml -f tag=v0.1.0
+gh workflow run release.yml -f tag=v0.2.0
 gh run watch
 ```
 
 3. The run checks out the tag, runs every check again, builds, signs and
-   replaces the files on the existing release (`Release v0.1.0 exists:
+   replaces the files on the existing release (`Release v0.2.0 exists:
    replacing its files (recovery)` in the log).
 4. Check it again with section 4. The rebuilt files have new checksums and
    new signatures, made by the release workflow on `main`.
@@ -90,9 +93,11 @@ gh run watch
 - Runtime versions: when a new Python version becomes current, add it to
   the `matrix` in `ci.yml` and drop the oldest one.
 - Private repositories: the checks, SBOM, checksums and releases work the
-  same. Signed build provenance (`gh attestation verify`) needs a public
-  repository, or GitHub Enterprise Cloud for private ones. Run time in
+  same, and the two signing steps are skipped there (they run only on public
+  repositories). Signed build provenance on a private repository needs
+  GitHub Enterprise Cloud. Run time in
   private repositories counts against the monthly minutes of your GitHub plan.
 - To stop a pull request from being merged while CI is red, turn on a branch
   rule for `main` in Settings and pick the `lint`, `test` and `build` checks
-  as required.
+  as required. Branch rules are free on public repositories; on a private
+  repository they need GitHub Pro, Team or Enterprise.

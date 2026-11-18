@@ -84,6 +84,19 @@ jobs:
           python -m venv /tmp/smoke
           /tmp/smoke/bin/python -m pip install dist/*.whl pytest==9.2.0
           /tmp/smoke/bin/python -m pytest tests/smoke -p no:cacheprovider
+      - name: Install the wheel for the SBOM scan
+        # Wheels only (no package code runs at install), in this read-only job.
+        run: |
+          python -m venv /tmp/sbom-env
+          /tmp/sbom-env/bin/python -m pip install --only-binary :all: dist/*.whl
+      - name: Create the SBOM (SPDX)
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: /tmp/sbom-env
+          format: spdx-json
+          output-file: dist/sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
       - name: Write checksums
         working-directory: dist
         run: |
