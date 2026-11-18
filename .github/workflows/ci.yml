@@ -1,4 +1,4 @@
-# Checks every push and pull request: lint, unit tests on two Python versions,
+# Checks every push and pull request: lint, unit tests on three Python versions,
 # then build the package, run the smoke tests on the built wheel and write checksums.
 # The release workflow calls this same file, so a release only happens when every check passes.
 name: CI
@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -100,7 +100,7 @@ jobs:
       - name: Write checksums
         working-directory: dist
         run: |
-          sha256sum -- *.whl *.tar.gz > SHA256SUMS
+          sha256sum -- *.whl *.tar.gz sbom.spdx.json > SHA256SUMS
           cat SHA256SUMS
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

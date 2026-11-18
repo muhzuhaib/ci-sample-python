@@ -31,8 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # Only this job may write: it signs the files and creates the release. It installs nothing.
-    # Signing runs on public repositories (private ones need GitHub Enterprise Cloud), so a private
-    # repository still gets its release, without the signatures.
+    # Signing runs on public repositories only, so a private repository still gets its release,
+    # without the signatures.
     permissions:
       contents: write
       id-token: write
