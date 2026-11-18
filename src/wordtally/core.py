@@ -24,4 +24,4 @@ def top_words(text: str, n: int = 5) -> list[tuple[str, int]]:
     if n < 1:
         raise ValueError("n must be at least 1")
     counts = Counter(words(text))
-    return sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:n]
+    return sorted(counts.items(), key=lambda item: -item[1])[:n]
